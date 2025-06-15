@@ -15,6 +15,7 @@ let detectedFrequency = 0;
 let detectedNote = '-';
 let oscillator = null;
 let previousHighlightedKey = null;
+let minOctave = 5; // Minimum octave for note detection (default: 5)
 
 // DOM elements
 const startButton = document.getElementById('startButton');
@@ -26,11 +27,16 @@ const statusElement = document.getElementById('status');
 const visualizer = document.getElementById('visualizer');
 const visualizerContext = visualizer.getContext('2d');
 const pianoKeys = document.getElementById('pianoKeys');
+const minOctaveInput = document.getElementById('minOctaveInput');
 
 // Set up event listeners
 startButton.addEventListener('click', startDetection);
 stopButton.addEventListener('click', stopDetection);
 playButton.addEventListener('click', playDetectedNote);
+minOctaveInput.addEventListener('change', function() {
+    minOctave = parseInt(this.value);
+    statusElement.textContent = `Minimum octave for detection set to ${minOctave}`;
+});
 
 // Resize canvas for proper resolution
 function setupCanvas() {
@@ -42,6 +48,10 @@ function setupCanvas() {
 function init() {
     setupCanvas();
     window.addEventListener('resize', setupCanvas);
+
+    // Initialize settings
+    minOctaveInput.value = minOctave;
+    statusElement.textContent = `Minimum octave for detection set to ${minOctave}`;
 
     // Make sure no piano keys are highlighted at startup
     if (previousHighlightedKey) {
@@ -143,13 +153,16 @@ function detectPitch(dataArray, bufferLength) {
         detectedFrequency = dominantFrequency;
         detectedNote = findClosestNote(dominantFrequency);
 
-        // Update UI
-        noteDisplay.textContent = detectedNote;
-        frequencyDisplay.textContent = `Frequency: ${detectedFrequency.toFixed(2)} Hz`;
-        playButton.disabled = false;
+        // Only update UI if a valid note (at or above the minimum octave) was found
+        if (detectedNote) {
+            // Update UI
+            noteDisplay.textContent = detectedNote;
+            frequencyDisplay.textContent = `Frequency: ${detectedFrequency.toFixed(2)} Hz`;
+            playButton.disabled = false;
 
-        // Highlight the detected note on the piano
-        highlightPianoKey(detectedNote);
+            // Highlight the detected note on the piano
+            highlightPianoKey(detectedNote);
+        }
     }
 
     // Continue detection loop
@@ -183,18 +196,24 @@ function findClosestNote(frequency) {
     let minDifference = Infinity;
 
     for (const [note, noteFrequency] of Object.entries(NOTE_FREQUENCIES)) {
-        const difference = Math.abs(frequency - noteFrequency);
-        if (difference < minDifference) {
-            minDifference = difference;
-            closestNote = note;
+        // Only consider notes at or above the minimum octave for pitch detection
+        const noteOctave = parseInt(note.charAt(note.length - 1));
+        if (noteOctave >= minOctave) {
+            const difference = Math.abs(frequency - noteFrequency);
+            if (difference < minDifference) {
+                minDifference = difference;
+                closestNote = note;
+            }
         }
     }
 
+    // If no note at or above the minimum octave matches, return empty string
     return closestNote;
 }
 
 // Play the detected note
 function playDetectedNote() {
+    // Only play if we have a valid note (at or above the minimum octave)
     if (!detectedNote || detectedNote === '-') return;
 
     // Create a new audio context if needed

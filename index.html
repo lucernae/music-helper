@@ -55,6 +55,32 @@
             border-radius: 4px;
             background-color: #f8f8f8;
         }
+        .settings {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+            text-align: left;
+        }
+        .settings h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .setting-item {
+            margin: 10px 0;
+        }
+        .setting-item label {
+            display: inline-block;
+            width: 250px;
+            font-weight: bold;
+        }
+        .setting-item input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 60px;
+            text-align: center;
+        }
         canvas {
             width: 100%;
             height: 200px;
@@ -125,6 +151,14 @@
             <button id="startButton">Start Detection</button>
             <button id="stopButton" disabled>Stop Detection</button>
             <button id="playButton" disabled>Play Detected Note</button>
+        </div>
+
+        <div class="settings">
+            <h3>Settings</h3>
+            <div class="setting-item">
+                <label for="minOctaveInput">Minimum Octave for Detection: </label>
+                <input type="number" id="minOctaveInput" min="4" max="5" value="5" step="1">
+            </div>
         </div>
 
         <div class="note-display" id="noteDisplay">-</div>
