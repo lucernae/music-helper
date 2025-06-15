@@ -61,28 +61,110 @@
             background-color: #f0f0f0;
             margin: 20px 0;
         }
+        /* Piano keyboard styles */
+        .piano-container {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            margin: 30px auto;
+            overflow: hidden;
+        }
+        .piano-keys {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        .piano-key {
+            flex: 1;
+            position: relative;
+            border: 1px solid #000;
+            background-color: white;
+            border-radius: 0 0 5px 5px;
+            margin: 0 1px;
+            box-sizing: border-box;
+        }
+        .piano-key.black {
+            position: absolute;
+            background-color: black;
+            width: 4%;
+            height: 60%;
+            z-index: 1;
+            border-radius: 0 0 3px 3px;
+        }
+        .piano-key.highlighted {
+            background-color: #2196F3;
+        }
+        .piano-key.black.highlighted {
+            background-color: #64B5F6;
+        }
+        .piano-key .note-name {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+        }
+        .piano-key.black .note-name {
+            color: white;
+            bottom: 3px;
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
     <h1>Whistle Note Detector</h1>
-    
+
     <div class="container">
         <div class="status" id="status">
             Click "Start Detection" to begin listening for whistling sounds.
         </div>
-        
+
         <div class="controls">
             <button id="startButton">Start Detection</button>
             <button id="stopButton" disabled>Stop Detection</button>
             <button id="playButton" disabled>Play Detected Note</button>
         </div>
-        
+
         <div class="note-display" id="noteDisplay">-</div>
         <div class="frequency-display" id="frequencyDisplay">Frequency: - Hz</div>
-        
+
         <canvas id="visualizer"></canvas>
+
+        <div class="piano-container">
+            <div class="piano-keys" id="pianoKeys">
+                <!-- White keys for C4 to B5 -->
+                <div class="piano-key" data-note="C4"><span class="note-name">C4</span></div>
+                <div class="piano-key" data-note="D4"><span class="note-name">D4</span></div>
+                <div class="piano-key" data-note="E4"><span class="note-name">E4</span></div>
+                <div class="piano-key" data-note="F4"><span class="note-name">F4</span></div>
+                <div class="piano-key" data-note="G4"><span class="note-name">G4</span></div>
+                <div class="piano-key" data-note="A4"><span class="note-name">A4</span></div>
+                <div class="piano-key" data-note="B4"><span class="note-name">B4</span></div>
+                <div class="piano-key" data-note="C5"><span class="note-name">C5</span></div>
+                <div class="piano-key" data-note="D5"><span class="note-name">D5</span></div>
+                <div class="piano-key" data-note="E5"><span class="note-name">E5</span></div>
+                <div class="piano-key" data-note="F5"><span class="note-name">F5</span></div>
+                <div class="piano-key" data-note="G5"><span class="note-name">G5</span></div>
+                <div class="piano-key" data-note="A5"><span class="note-name">A5</span></div>
+                <div class="piano-key" data-note="B5"><span class="note-name">B5</span></div>
+
+                <!-- Black keys for C4 to B5 -->
+                <div class="piano-key black" data-note="C#4" style="left: 3.5%;"><span class="note-name">C#4</span></div>
+                <div class="piano-key black" data-note="D#4" style="left: 10.5%;"><span class="note-name">D#4</span></div>
+                <div class="piano-key black" data-note="F#4" style="left: 24.5%;"><span class="note-name">F#4</span></div>
+                <div class="piano-key black" data-note="G#4" style="left: 31.5%;"><span class="note-name">G#4</span></div>
+                <div class="piano-key black" data-note="A#4" style="left: 38.5%;"><span class="note-name">A#4</span></div>
+                <div class="piano-key black" data-note="C#5" style="left: 52.5%;"><span class="note-name">C#5</span></div>
+                <div class="piano-key black" data-note="D#5" style="left: 59.5%;"><span class="note-name">D#5</span></div>
+                <div class="piano-key black" data-note="F#5" style="left: 73.5%;"><span class="note-name">F#5</span></div>
+                <div class="piano-key black" data-note="G#5" style="left: 80.5%;"><span class="note-name">G#5</span></div>
+                <div class="piano-key black" data-note="A#5" style="left: 87.5%;"><span class="note-name">A#5</span></div>
+            </div>
+        </div>
     </div>
-    
+
     <script src="app.js"></script>
 </body>
 </html>
