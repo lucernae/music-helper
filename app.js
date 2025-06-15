@@ -102,6 +102,7 @@ function toggleMappingMode() {
         mapKeyboardButton.textContent = "Cancel Mapping";
         mappingStatus.style.display = "block";
         mappingButtons.style.display = "block";
+        mappingStatus.textContent = "Press a keyboard key, then click on a piano key to map it.";
         statusElement.textContent = "Keyboard mapping mode active. Press a keyboard key, then click on a piano key to map it.";
     } else {
         // Exit mapping mode
@@ -178,7 +179,7 @@ function updatePianoKeyDisplay() {
 
         if (keyboardKey) {
             // If a keyboard key is mapped to this note, display it
-            noteNameElement.innerHTML = `${note}<br><small>[${keyboardKey}]</small>`;
+            noteNameElement.innerHTML = `<small>[${keyboardKey}]</small><br>${note}`;
         } else {
             // Otherwise, just display the note name
             noteNameElement.textContent = note;
