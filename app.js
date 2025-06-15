@@ -1,0 +1,219 @@
+// Music note frequencies in Hz (C4 to B5)
+const NOTE_FREQUENCIES = {
+    'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'E4': 329.63, 'F4': 349.23,
+    'F#4': 369.99, 'G4': 392.00, 'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
+    'C5': 523.25, 'C#5': 554.37, 'D5': 587.33, 'D#5': 622.25, 'E5': 659.25, 'F5': 698.46,
+    'F#5': 739.99, 'G5': 783.99, 'G#5': 830.61, 'A5': 880.00, 'A#5': 932.33, 'B5': 987.77
+};
+
+// App state
+let audioContext;
+let analyser;
+let microphone;
+let isDetecting = false;
+let detectedFrequency = 0;
+let detectedNote = '-';
+let oscillator = null;
+
+// DOM elements
+const startButton = document.getElementById('startButton');
+const stopButton = document.getElementById('stopButton');
+const playButton = document.getElementById('playButton');
+const noteDisplay = document.getElementById('noteDisplay');
+const frequencyDisplay = document.getElementById('frequencyDisplay');
+const statusElement = document.getElementById('status');
+const visualizer = document.getElementById('visualizer');
+const visualizerContext = visualizer.getContext('2d');
+
+// Set up event listeners
+startButton.addEventListener('click', startDetection);
+stopButton.addEventListener('click', stopDetection);
+playButton.addEventListener('click', playDetectedNote);
+
+// Resize canvas for proper resolution
+function setupCanvas() {
+    visualizer.width = visualizer.clientWidth;
+    visualizer.height = visualizer.clientHeight;
+}
+
+// Initialize the app
+function init() {
+    setupCanvas();
+    window.addEventListener('resize', setupCanvas);
+}
+
+// Start the detection process
+async function startDetection() {
+    try {
+        // Create audio context
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Get microphone access
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        microphone = audioContext.createMediaStreamSource(stream);
+        
+        // Create analyser node
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        
+        // Connect microphone to analyser
+        microphone.connect(analyser);
+        
+        // Update UI
+        startButton.disabled = true;
+        stopButton.disabled = false;
+        playButton.disabled = true;
+        statusElement.textContent = 'Listening for whistling sounds...';
+        
+        // Start detection loop
+        isDetecting = true;
+        detectPitch(dataArray, bufferLength);
+        
+    } catch (error) {
+        console.error('Error accessing microphone:', error);
+        statusElement.textContent = 'Error: ' + error.message;
+    }
+}
+
+// Stop the detection process
+function stopDetection() {
+    if (microphone) {
+        microphone.disconnect();
+        microphone = null;
+    }
+    
+    if (audioContext) {
+        audioContext.close();
+        audioContext = null;
+    }
+    
+    isDetecting = false;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    playButton.disabled = detectedNote === '-';
+    statusElement.textContent = 'Detection stopped.';
+}
+
+// Main pitch detection function
+function detectPitch(dataArray, bufferLength) {
+    if (!isDetecting) return;
+    
+    // Get frequency data
+    analyser.getByteFrequencyData(dataArray);
+    
+    // Draw visualization
+    drawVisualization(dataArray, bufferLength);
+    
+    // Find the dominant frequency
+    const dominantFrequency = findDominantFrequency(dataArray, bufferLength);
+    
+    // Only update if we have a significant frequency (whistling)
+    if (dominantFrequency > 100) {
+        detectedFrequency = dominantFrequency;
+        detectedNote = findClosestNote(dominantFrequency);
+        
+        // Update UI
+        noteDisplay.textContent = detectedNote;
+        frequencyDisplay.textContent = `Frequency: ${detectedFrequency.toFixed(2)} Hz`;
+        playButton.disabled = false;
+    }
+    
+    // Continue detection loop
+    requestAnimationFrame(() => detectPitch(dataArray, bufferLength));
+}
+
+// Find the dominant frequency in the audio signal
+function findDominantFrequency(dataArray, bufferLength) {
+    // Find the peak in the frequency data
+    let maxValue = 0;
+    let maxIndex = 0;
+    
+    for (let i = 0; i < bufferLength; i++) {
+        if (dataArray[i] > maxValue) {
+            maxValue = dataArray[i];
+            maxIndex = i;
+        }
+    }
+    
+    // Convert index to frequency
+    // The frequency resolution is sampleRate / fftSize
+    const frequency = maxIndex * audioContext.sampleRate / (analyser.fftSize * 2);
+    
+    // Only return if the signal is strong enough (to filter out background noise)
+    return maxValue > 50 ? frequency : 0;
+}
+
+// Find the closest musical note to a given frequency
+function findClosestNote(frequency) {
+    let closestNote = '';
+    let minDifference = Infinity;
+    
+    for (const [note, noteFrequency] of Object.entries(NOTE_FREQUENCIES)) {
+        const difference = Math.abs(frequency - noteFrequency);
+        if (difference < minDifference) {
+            minDifference = difference;
+            closestNote = note;
+        }
+    }
+    
+    return closestNote;
+}
+
+// Play the detected note
+function playDetectedNote() {
+    if (!detectedNote || detectedNote === '-') return;
+    
+    // Create a new audio context if needed
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    
+    // Stop any currently playing sound
+    if (oscillator) {
+        oscillator.stop();
+        oscillator = null;
+    }
+    
+    // Create and configure oscillator
+    oscillator = audioContext.createOscillator();
+    oscillator.type = 'sine'; // Sine wave for a pure tone
+    oscillator.frequency.setValueAtTime(detectedFrequency, audioContext.currentTime);
+    
+    // Connect to output and play
+    oscillator.connect(audioContext.destination);
+    oscillator.start();
+    
+    // Stop after 1 second
+    setTimeout(() => {
+        if (oscillator) {
+            oscillator.stop();
+            oscillator = null;
+        }
+    }, 1000);
+}
+
+// Draw the audio visualization
+function drawVisualization(dataArray, bufferLength) {
+    // Clear the canvas
+    visualizerContext.clearRect(0, 0, visualizer.width, visualizer.height);
+    
+    // Draw the frequency spectrum
+    const barWidth = (visualizer.width / bufferLength) * 2;
+    let x = 0;
+    
+    for (let i = 0; i < bufferLength; i++) {
+        const barHeight = (dataArray[i] / 255) * visualizer.height;
+        
+        // Use a gradient color based on frequency
+        const hue = i / bufferLength * 360;
+        visualizerContext.fillStyle = `hsl(${hue}, 100%, 50%)`;
+        
+        visualizerContext.fillRect(x, visualizer.height - barHeight, barWidth, barHeight);
+        x += barWidth;
+    }
+}
+
+// Initialize the app when the page loads
+window.addEventListener('load', init);

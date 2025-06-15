@@ -1,0 +1,8 @@
+# This is an example .envrc file for use with direnv
+# Copy this file to .envrc and run 'direnv allow' to enable
+
+# Use the Nix flake in this directory
+use flake
+
+# You can add additional environment variables below if needed
+# export MY_VAR=value

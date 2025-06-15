@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whistle Note Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            margin-top: 30px;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .note-display {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 30px 0;
+            color: #2196F3;
+        }
+        .frequency-display {
+            font-size: 24px;
+            margin: 10px 0;
+            color: #666;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f8f8f8;
+        }
+        canvas {
+            width: 100%;
+            height: 200px;
+            background-color: #f0f0f0;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Whistle Note Detector</h1>
+    
+    <div class="container">
+        <div class="status" id="status">
+            Click "Start Detection" to begin listening for whistling sounds.
+        </div>
+        
+        <div class="controls">
+            <button id="startButton">Start Detection</button>
+            <button id="stopButton" disabled>Stop Detection</button>
+            <button id="playButton" disabled>Play Detected Note</button>
+        </div>
+        
+        <div class="note-display" id="noteDisplay">-</div>
+        <div class="frequency-display" id="frequencyDisplay">Frequency: - Hz</div>
+        
+        <canvas id="visualizer"></canvas>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
