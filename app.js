@@ -20,6 +20,8 @@ let detectedNote = '-';
 let oscillator = null;
 let previousHighlightedKey = null;
 let minOctave = 5; // Minimum octave for note detection (default: 5)
+let activeOscillators = {}; // To track multiple oscillators for keyboard input
+let highlightedKeys = {}; // To track multiple highlighted keys
 
 // DOM elements
 const startButton = document.getElementById('startButton');
@@ -47,6 +49,30 @@ function setupCanvas() {
     visualizer.width = visualizer.clientWidth;
     visualizer.height = visualizer.clientHeight;
 }
+
+// Keyboard to piano key mapping
+const keyboardMapping = {
+    // White keys (z-/ row)
+    'z': 'B4',
+    'x': 'C5',
+    'c': 'D5',
+    'v': 'E5', // Specifically mapped to E5 as per requirements
+    'b': 'F5', // Specifically mapped to F5 as per requirements
+    'n': 'G5', // Specifically mapped to G5 as per requirements
+    'm': 'A5',
+    ',': 'B5',
+    '.': 'C6',
+    '/': 'D6',
+
+    // Black keys (a-' row)
+    'd': 'C#5',  // Above 'x' (C5)
+    'f': 'D#5',  // Above 'c' (D5)
+    'h': 'F#5',  // Above 'b' (F5)
+    'j': 'G#5',  // Above 'n' (G5)
+    'k': 'A#5',  // Above 'm' (A5)
+    'l': 'C#6',  // Above ',' (B5)
+    ';': 'D#6'   // Above '.' (C6)
+};
 
 // Initialize the app
 function init() {
@@ -77,6 +103,10 @@ function init() {
         key.addEventListener('mouseup', stopNote);
         key.addEventListener('mouseleave', stopNote);
     });
+
+    // Add keyboard event listeners
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
 }
 
 // Start the detection process
@@ -252,7 +282,7 @@ function playDetectedNote() {
 }
 
 // Play a note when a piano key is pressed
-function playNoteFromKey(note) {
+function playNoteFromKey(note, keyIdentifier = null) {
     if (!note) return;
 
     // Get the frequency for this note
@@ -264,54 +294,122 @@ function playNoteFromKey(note) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
 
-    // Stop any currently playing sound
-    // if (oscillator) {
-    //     oscillator.stop();
-    //     oscillator = null;
-    // }
+    // If a key identifier is provided, we're handling keyboard input
+    if (keyIdentifier) {
+        // If this key is already playing, don't start it again
+        if (activeOscillators[keyIdentifier]) return;
 
-    // Create and configure oscillator
-    oscillator = audioContext.createOscillator();
-    oscillator.type = 'triangle';
-    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+        // Create and configure oscillator for this key
+        const newOscillator = audioContext.createOscillator();
+        newOscillator.type = 'triangle';
+        newOscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
 
-    // Connect to output and play
-    oscillator.connect(audioContext.destination);
-    oscillator.start();
-    // Note: No setTimeout here - the note will keep playing until stopNote is called
+        // Connect to output and play
+        newOscillator.connect(audioContext.destination);
+        newOscillator.start();
+
+        // Store the oscillator with its key identifier
+        activeOscillators[keyIdentifier] = newOscillator;
+    } else {
+        // For mouse clicks, use the original behavior
+        // Create and configure oscillator
+        oscillator = audioContext.createOscillator();
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+        // Connect to output and play
+        oscillator.connect(audioContext.destination);
+        oscillator.start();
+        // Note: No setTimeout here - the note will keep playing until stopNote is called
+    }
 }
 
-function resetHighlightedKey() {
-    const key = pianoKeys.querySelector(`.highlighted`);
-    console.log(key);
-    if (key) {
-        key.classList.remove('highlighted');
-        previousHighlightedKey = null;
+function resetHighlightedKey(keyIdentifier = null) {
+    if (keyIdentifier) {
+        // Remove highlight for a specific key
+        if (highlightedKeys[keyIdentifier]) {
+            highlightedKeys[keyIdentifier].classList.remove('highlighted');
+            delete highlightedKeys[keyIdentifier];
+        }
+    } else {
+        // Remove all highlights (for mouse interaction)
+        if (previousHighlightedKey) {
+            previousHighlightedKey.classList.remove('highlighted');
+            previousHighlightedKey = null;
+        }
+
+        // Also clear any keyboard highlights
+        Object.values(highlightedKeys).forEach(key => {
+            key.classList.remove('highlighted');
+        });
+        highlightedKeys = {};
     }
 }
 
 // Stop the currently playing note
 function stopNote() {
     if (oscillator) {
-        resetHighlightedKey()
+        resetHighlightedKey();
         oscillator.stop();
         oscillator = null;
     }
 }
 
-// Highlight the detected note on the piano
-function highlightPianoKey(note) {
-    // Remove previous highlight
-    if (previousHighlightedKey) {
-        previousHighlightedKey.classList.remove('highlighted');
-    }
+// Handle keyboard key press
+function handleKeyDown(event) {
+    // Get the key that was pressed (lowercase for consistency)
+    const key = event.key.toLowerCase();
 
+    // Check if this key is mapped to a piano note
+    if (keyboardMapping[key]) {
+        // Get the note for this key
+        const note = keyboardMapping[key];
+
+        // Play the note with the key as identifier
+        playNoteFromKey(note, key);
+
+        // Highlight the corresponding piano key
+        highlightPianoKey(note, key);
+    }
+}
+
+// Handle keyboard key release
+function handleKeyUp(event) {
+    // Get the key that was released (lowercase for consistency)
+    const key = event.key.toLowerCase();
+
+    // Check if this key is mapped to a piano note and is currently playing
+    if (keyboardMapping[key] && activeOscillators[key]) {
+        // Stop the oscillator for this key
+        activeOscillators[key].stop();
+
+        // Remove it from the active oscillators
+        delete activeOscillators[key];
+
+        // Remove highlight from the piano key
+        resetHighlightedKey(key);
+    }
+}
+
+// Highlight the detected note on the piano
+function highlightPianoKey(note, keyIdentifier = null) {
     // Find the key with the matching note
     if (note && note !== '-') {
         const key = pianoKeys.querySelector(`[data-note="${note}"]`);
         if (key) {
-            key.classList.add('highlighted');
-            previousHighlightedKey = key;
+            if (keyIdentifier) {
+                // For keyboard input, store in highlightedKeys
+                key.classList.add('highlighted');
+                highlightedKeys[keyIdentifier] = key;
+            } else {
+                // For mouse clicks or detected notes, use the original behavior
+                // Remove previous highlight
+                if (previousHighlightedKey) {
+                    previousHighlightedKey.classList.remove('highlighted');
+                }
+                key.classList.add('highlighted');
+                previousHighlightedKey = key;
+            }
         }
     }
 }
