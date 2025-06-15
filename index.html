@@ -81,6 +81,21 @@
             width: 60px;
             text-align: center;
         }
+        .mapping-buttons {
+            margin-top: 10px;
+            display: none;
+        }
+        .mapping-buttons button {
+            margin: 0 5px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        .mapping-status {
+            margin-top: 10px;
+            font-style: italic;
+            color: #666;
+            display: none;
+        }
         canvas {
             width: 100%;
             height: 200px;
@@ -129,13 +144,21 @@
             left: 0;
             right: 0;
             text-align: center;
-            font-size: 12px;
+            font-size: 10px;
             color: #333;
+            line-height: 1.2;
         }
         .piano-key.black .note-name {
             color: white;
             bottom: 3px;
-            font-size: 10px;
+            font-size: 8px;
+        }
+        .piano-key .note-name small {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .piano-key.black .note-name small {
+            color: #ccc;
         }
     </style>
 </head>
@@ -158,6 +181,14 @@
             <div class="setting-item">
                 <label for="minOctaveInput">Minimum Octave for Detection: </label>
                 <input type="number" id="minOctaveInput" min="3" max="6" value="5" step="1">
+            </div>
+            <div class="setting-item">
+                <button id="mapKeyboardButton">Map Keyboard Keys</button>
+                <div class="mapping-status" id="mappingStatus">Press a keyboard key, then click on a piano key to map it.</div>
+                <div class="mapping-buttons" id="mappingButtons">
+                    <button id="resetMappingButton">Reset Mapping</button>
+                    <button id="saveMappingButton">Save Mapping</button>
+                </div>
             </div>
         </div>
 

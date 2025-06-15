@@ -35,6 +35,13 @@ const visualizerContext = visualizer.getContext('2d');
 const pianoKeys = document.getElementById('pianoKeys');
 const minOctaveInput = document.getElementById('minOctaveInput');
 
+// Keyboard mapping UI elements
+const mapKeyboardButton = document.getElementById('mapKeyboardButton');
+const mappingStatus = document.getElementById('mappingStatus');
+const mappingButtons = document.getElementById('mappingButtons');
+const resetMappingButton = document.getElementById('resetMappingButton');
+const saveMappingButton = document.getElementById('saveMappingButton');
+
 // Set up event listeners
 startButton.addEventListener('click', startDetection);
 stopButton.addEventListener('click', stopDetection);
@@ -44,14 +51,19 @@ minOctaveInput.addEventListener('change', function() {
     statusElement.textContent = `Minimum octave for detection set to ${minOctave}`;
 });
 
+// Keyboard mapping event listeners
+mapKeyboardButton.addEventListener('click', toggleMappingMode);
+resetMappingButton.addEventListener('click', resetKeyboardMapping);
+saveMappingButton.addEventListener('click', saveKeyboardMapping);
+
 // Resize canvas for proper resolution
 function setupCanvas() {
     visualizer.width = visualizer.clientWidth;
     visualizer.height = visualizer.clientHeight;
 }
 
-// Keyboard to piano key mapping
-const keyboardMapping = {
+// Default keyboard to piano key mapping
+const defaultKeyboardMapping = {
     // White keys (z-/ row)
     'z': 'B4',
     'x': 'C5',
@@ -74,6 +86,106 @@ const keyboardMapping = {
     ';': 'D#6'   // Above '.' (C6)
 };
 
+// Current keyboard mapping (initialized with default)
+let keyboardMapping = {...defaultKeyboardMapping};
+
+// Mapping configuration state
+let isMappingMode = false;
+let currentKeyToMap = null;
+
+// Functions for keyboard mapping configuration
+function toggleMappingMode() {
+    isMappingMode = !isMappingMode;
+
+    if (isMappingMode) {
+        // Enter mapping mode
+        mapKeyboardButton.textContent = "Cancel Mapping";
+        mappingStatus.style.display = "block";
+        mappingButtons.style.display = "block";
+        statusElement.textContent = "Keyboard mapping mode active. Press a keyboard key, then click on a piano key to map it.";
+    } else {
+        // Exit mapping mode
+        mapKeyboardButton.textContent = "Map Keyboard Keys";
+        mappingStatus.style.display = "none";
+        mappingButtons.style.display = "none";
+        currentKeyToMap = null;
+        statusElement.textContent = "Keyboard mapping mode deactivated.";
+    }
+}
+
+function resetKeyboardMapping() {
+    keyboardMapping = {...defaultKeyboardMapping};
+    statusElement.textContent = "Keyboard mapping reset to default.";
+
+    // Update the piano key display with the new mapping
+    updatePianoKeyDisplay();
+
+    // Exit mapping mode
+    if (isMappingMode) {
+        toggleMappingMode();
+    }
+}
+
+function saveKeyboardMapping() {
+    // In a real application, you might save to localStorage or a server
+    // For this example, we'll just keep the current mapping in memory
+    statusElement.textContent = "Keyboard mapping saved.";
+
+    // Update the piano key display with the new mapping
+    updatePianoKeyDisplay();
+
+    // Exit mapping mode
+    if (isMappingMode) {
+        toggleMappingMode();
+    }
+}
+
+function handlePianoKeyClick(event) {
+    const note = this.getAttribute('data-note');
+
+    if (isMappingMode && currentKeyToMap) {
+        // Map the current keyboard key to this piano key
+        keyboardMapping[currentKeyToMap] = note;
+        mappingStatus.textContent = `Mapped key '${currentKeyToMap}' to note '${note}'`;
+        currentKeyToMap = null;
+
+        // Update the piano key display with the new mapping
+        updatePianoKeyDisplay();
+    } else {
+        // Normal piano key click behavior
+        playNoteFromKey(note);
+        highlightPianoKey(note);
+    }
+}
+
+// Find which keyboard key is mapped to a specific note
+function findKeyForNote(note) {
+    for (const [key, mappedNote] of Object.entries(keyboardMapping)) {
+        if (mappedNote === note) {
+            return key;
+        }
+    }
+    return null; // No key mapped to this note
+}
+
+// Update the piano key display with the mapped keyboard keys
+function updatePianoKeyDisplay() {
+    const keys = pianoKeys.querySelectorAll('.piano-key');
+    keys.forEach(key => {
+        const note = key.getAttribute('data-note');
+        const keyboardKey = findKeyForNote(note);
+        const noteNameElement = key.querySelector('.note-name');
+
+        if (keyboardKey) {
+            // If a keyboard key is mapped to this note, display it
+            noteNameElement.innerHTML = `${note}<br><small>[${keyboardKey}]</small>`;
+        } else {
+            // Otherwise, just display the note name
+            noteNameElement.textContent = note;
+        }
+    });
+}
+
 // Initialize the app
 function init() {
     setupCanvas();
@@ -92,12 +204,8 @@ function init() {
     // Add event listeners to piano keys
     const keys = pianoKeys.querySelectorAll('.piano-key');
     keys.forEach(key => {
-        // Play note when mouse button is pressed down
-        key.addEventListener('mousedown', function() {
-            const note = this.getAttribute('data-note');
-            playNoteFromKey(note);
-            highlightPianoKey(note);
-        });
+        // Use the new handler for mouse button press
+        key.addEventListener('mousedown', handlePianoKeyClick);
 
         // Stop note when mouse button is released or mouse leaves the key
         key.addEventListener('mouseup', stopNote);
@@ -107,6 +215,9 @@ function init() {
     // Add keyboard event listeners
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+
+    // Update the piano key display with the mapped keyboard keys
+    updatePianoKeyDisplay();
 }
 
 // Start the detection process
@@ -359,6 +470,13 @@ function stopNote() {
 function handleKeyDown(event) {
     // Get the key that was pressed (lowercase for consistency)
     const key = event.key.toLowerCase();
+
+    // If in mapping mode, store the key to map
+    if (isMappingMode) {
+        currentKeyToMap = key;
+        mappingStatus.textContent = `Press a piano key to map it to '${key}'`;
+        return;
+    }
 
     // Check if this key is mapped to a piano note
     if (keyboardMapping[key]) {
