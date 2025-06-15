@@ -157,7 +157,7 @@
             <h3>Settings</h3>
             <div class="setting-item">
                 <label for="minOctaveInput">Minimum Octave for Detection: </label>
-                <input type="number" id="minOctaveInput" min="4" max="5" value="5" step="1">
+                <input type="number" id="minOctaveInput" min="3" max="6" value="5" step="1">
             </div>
         </div>
 
@@ -168,7 +168,14 @@
 
         <div class="piano-container">
             <div class="piano-keys" id="pianoKeys">
-                <!-- White keys for C4 to B5 -->
+                <!-- White keys for C3 to B6 -->
+                <div class="piano-key" data-note="C3"><span class="note-name">C3</span></div>
+                <div class="piano-key" data-note="D3"><span class="note-name">D3</span></div>
+                <div class="piano-key" data-note="E3"><span class="note-name">E3</span></div>
+                <div class="piano-key" data-note="F3"><span class="note-name">F3</span></div>
+                <div class="piano-key" data-note="G3"><span class="note-name">G3</span></div>
+                <div class="piano-key" data-note="A3"><span class="note-name">A3</span></div>
+                <div class="piano-key" data-note="B3"><span class="note-name">B3</span></div>
                 <div class="piano-key" data-note="C4"><span class="note-name">C4</span></div>
                 <div class="piano-key" data-note="D4"><span class="note-name">D4</span></div>
                 <div class="piano-key" data-note="E4"><span class="note-name">E4</span></div>
@@ -183,18 +190,35 @@
                 <div class="piano-key" data-note="G5"><span class="note-name">G5</span></div>
                 <div class="piano-key" data-note="A5"><span class="note-name">A5</span></div>
                 <div class="piano-key" data-note="B5"><span class="note-name">B5</span></div>
+                <div class="piano-key" data-note="C6"><span class="note-name">C6</span></div>
+                <div class="piano-key" data-note="D6"><span class="note-name">D6</span></div>
+                <div class="piano-key" data-note="E6"><span class="note-name">E6</span></div>
+                <div class="piano-key" data-note="F6"><span class="note-name">F6</span></div>
+                <div class="piano-key" data-note="G6"><span class="note-name">G6</span></div>
+                <div class="piano-key" data-note="A6"><span class="note-name">A6</span></div>
+                <div class="piano-key" data-note="B6"><span class="note-name">B6</span></div>
 
-                <!-- Black keys for C4 to B5 -->
-                <div class="piano-key black" data-note="C#4" style="left: 3.5%;"><span class="note-name">C#4</span></div>
-                <div class="piano-key black" data-note="D#4" style="left: 10.5%;"><span class="note-name">D#4</span></div>
-                <div class="piano-key black" data-note="F#4" style="left: 24.5%;"><span class="note-name">F#4</span></div>
-                <div class="piano-key black" data-note="G#4" style="left: 31.5%;"><span class="note-name">G#4</span></div>
-                <div class="piano-key black" data-note="A#4" style="left: 38.5%;"><span class="note-name">A#4</span></div>
-                <div class="piano-key black" data-note="C#5" style="left: 52.5%;"><span class="note-name">C#5</span></div>
-                <div class="piano-key black" data-note="D#5" style="left: 59.5%;"><span class="note-name">D#5</span></div>
-                <div class="piano-key black" data-note="F#5" style="left: 73.5%;"><span class="note-name">F#5</span></div>
-                <div class="piano-key black" data-note="G#5" style="left: 80.5%;"><span class="note-name">G#5</span></div>
-                <div class="piano-key black" data-note="A#5" style="left: 87.5%;"><span class="note-name">A#5</span></div>
+                <!-- Black keys for C3 to B6 -->
+                <div class="piano-key black" data-note="C#3" style="left: 1.8%;"><span class="note-name">C#3</span></div>
+                <div class="piano-key black" data-note="D#3" style="left: 5.4%;"><span class="note-name">D#3</span></div>
+                <div class="piano-key black" data-note="F#3" style="left: 12.5%;"><span class="note-name">F#3</span></div>
+                <div class="piano-key black" data-note="G#3" style="left: 16.1%;"><span class="note-name">G#3</span></div>
+                <div class="piano-key black" data-note="A#3" style="left: 19.6%;"><span class="note-name">A#3</span></div>
+                <div class="piano-key black" data-note="C#4" style="left: 26.8%;"><span class="note-name">C#4</span></div>
+                <div class="piano-key black" data-note="D#4" style="left: 30.4%;"><span class="note-name">D#4</span></div>
+                <div class="piano-key black" data-note="F#4" style="left: 37.5%;"><span class="note-name">F#4</span></div>
+                <div class="piano-key black" data-note="G#4" style="left: 41.1%;"><span class="note-name">G#4</span></div>
+                <div class="piano-key black" data-note="A#4" style="left: 44.6%;"><span class="note-name">A#4</span></div>
+                <div class="piano-key black" data-note="C#5" style="left: 51.8%;"><span class="note-name">C#5</span></div>
+                <div class="piano-key black" data-note="D#5" style="left: 55.4%;"><span class="note-name">D#5</span></div>
+                <div class="piano-key black" data-note="F#5" style="left: 62.5%;"><span class="note-name">F#5</span></div>
+                <div class="piano-key black" data-note="G#5" style="left: 66.1%;"><span class="note-name">G#5</span></div>
+                <div class="piano-key black" data-note="A#5" style="left: 69.6%;"><span class="note-name">A#5</span></div>
+                <div class="piano-key black" data-note="C#6" style="left: 76.8%;"><span class="note-name">C#6</span></div>
+                <div class="piano-key black" data-note="D#6" style="left: 80.4%;"><span class="note-name">D#6</span></div>
+                <div class="piano-key black" data-note="F#6" style="left: 87.5%;"><span class="note-name">F#6</span></div>
+                <div class="piano-key black" data-note="G#6" style="left: 91.1%;"><span class="note-name">G#6</span></div>
+                <div class="piano-key black" data-note="A#6" style="left: 94.6%;"><span class="note-name">A#6</span></div>
             </div>
         </div>
     </div>
