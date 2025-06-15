@@ -48,6 +48,21 @@ function init() {
         previousHighlightedKey.classList.remove('highlighted');
         previousHighlightedKey = null;
     }
+
+    // Add event listeners to piano keys
+    const keys = pianoKeys.querySelectorAll('.piano-key');
+    keys.forEach(key => {
+        // Play note when mouse button is pressed down
+        key.addEventListener('mousedown', function() {
+            const note = this.getAttribute('data-note');
+            playNoteFromKey(note);
+            highlightPianoKey(note);
+        });
+
+        // Stop note when mouse button is released or mouse leaves the key
+        key.addEventListener('mouseup', stopNote);
+        key.addEventListener('mouseleave', stopNote);
+    });
 }
 
 // Start the detection process
@@ -195,20 +210,70 @@ function playDetectedNote() {
 
     // Create and configure oscillator
     oscillator = audioContext.createOscillator();
-    oscillator.type = 'sine'; // Sine wave for a pure tone
+    oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(detectedFrequency, audioContext.currentTime);
 
     // Connect to output and play
     oscillator.connect(audioContext.destination);
     oscillator.start();
 
-    // Stop after 1 second
+    // For consistency with piano key behavior, we'll stop the note after 1 second
+    // since there's no mouseup event for the play button
     setTimeout(() => {
         if (oscillator) {
+            resetHighlightedKey()
             oscillator.stop();
             oscillator = null;
         }
     }, 1000);
+}
+
+// Play a note when a piano key is pressed
+function playNoteFromKey(note) {
+    if (!note) return;
+
+    // Get the frequency for this note
+    const frequency = NOTE_FREQUENCIES[note];
+    if (!frequency) return;
+
+    // Create a new audio context if needed
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    // Stop any currently playing sound
+    // if (oscillator) {
+    //     oscillator.stop();
+    //     oscillator = null;
+    // }
+
+    // Create and configure oscillator
+    oscillator = audioContext.createOscillator();
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+
+    // Connect to output and play
+    oscillator.connect(audioContext.destination);
+    oscillator.start();
+    // Note: No setTimeout here - the note will keep playing until stopNote is called
+}
+
+function resetHighlightedKey() {
+    const key = pianoKeys.querySelector(`.highlighted`);
+    console.log(key);
+    if (key) {
+        key.classList.remove('highlighted');
+        previousHighlightedKey = null;
+    }
+}
+
+// Stop the currently playing note
+function stopNote() {
+    if (oscillator) {
+        resetHighlightedKey()
+        oscillator.stop();
+        oscillator = null;
+    }
 }
 
 // Highlight the detected note on the piano
